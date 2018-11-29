@@ -1,25 +1,24 @@
 package os;
 public class Banker
-{ int[][] max={{7,5,3},{3,2,2},{9,0,2},{2,2,2},{4,3,3}};;
+{ int[][] max;
   int[][] need;
-  int[][] allocated={{0,1,0},{2,0,0},{3,0,2},{2,1,1},{0,0,2}};;
-  int[] available={3,3,2};
+  int[][] allocated;
+  int[] available;
   int NoOfProcesses,DataTypes;
   
   public Banker()
   {  
       NoOfProcesses=5;
       DataTypes=3;
-     
-      //max=new int[NoOfProcesses][DataTypes];
+      max=new int[NoOfProcesses][DataTypes];
       need=new int[NoOfProcesses][DataTypes];
-      //allocated=new int[NoOfProcesses][DataTypes];
-      //available=new int[DataTypes];
-      
-  }
+      allocated=new int[NoOfProcesses][DataTypes];
+      available=new int[DataTypes];
+ }
+  // functions bta3t el random
   public void fillMax()
   {
-          // max={{7,5,3},{3,2,2},{9,0,2},{2,2,2},{4,3,3}};
+          
   }
   public void fillAllocated()
   {
@@ -29,6 +28,7 @@ public class Banker
   
   
   }
+  //==============================
  public void banker()
  {  int order[]=new int[NoOfProcesses]; // to know to order the processes finished with
     boolean isDone[]=new boolean[NoOfProcesses]; // so we don't enter to process twice intially the values are false!
@@ -36,7 +36,7 @@ public class Banker
     int i=0; 
     while(i<NoOfProcesses)
     {  
-        boolean getout=false; //safety variable 
+        boolean getout=false; //safety variable....3shan lw hasal f mra w 3mlt loop kmla mn l inner loop w mdkhltsh wla mra el if,a3rf atla3 mnha
         for(int r=0;r<NoOfProcesses;r++)
         {
             if(NeedLessThanAvailable(r) && !isDone[r]) 
