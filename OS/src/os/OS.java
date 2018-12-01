@@ -19,8 +19,10 @@ public class OS {
         Request[i]=rand.nextInt(7);
      }
      //==================== 
+       System.out.println("Request:"+n);
        int Pwr=rand.nextInt(b.NoOfProcesses);
        b.banker(Pwr,Request);
+       System.out.println("===============");
     
      }
      

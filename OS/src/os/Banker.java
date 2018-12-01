@@ -121,11 +121,14 @@ public class Banker
          {  break;} */
          
     } }
-    else {
-            System.out.println("request wasn't granted Bec it didn't pass the checking whether it's less than available and need or not");
+    else
+    {  
+           System.out.println("request wasn't granted Bec it didn't pass the checking whether it's less than available and need or not");
     }
-      
-      // print max array
+    
+       if(i==NoOfProcesses)
+         {
+             // print max array
       System.out.println("Max Array ");
        for(int x=0;x<NoOfProcesses;x++)
     {
@@ -135,6 +138,7 @@ public class Banker
         }
         System.out.println();
     }
+     //==========================
     System.out.println("Allocated Array");
     // print allocated array
       for(int x=0;x<NoOfProcesses;x++)
@@ -145,6 +149,7 @@ public class Banker
         }
         System.out.println();
     }
+      //=========================
       System.out.println("Need Array");
     // print allocated array
       for(int x=0;x<NoOfProcesses;x++)
@@ -155,7 +160,7 @@ public class Banker
         }
         System.out.println();
     }
-   
+   //==============================
       System.out.println("The Order of Processes");
       for(int h=0;h<NoOfProcesses;h++)
           System.out.println("P"+order[h]);
@@ -173,15 +178,64 @@ public class Banker
           System.out.print(req[w]+" ");
       System.out.println("");
       //==================
-         if(i==NoOfProcesses)
-         { System.out.println("System is Safe");}
-      else 
+             System.out.println("System is Safe");}
+       else if(i!=0 && RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req) ) 
          { 
              NeedandRequest(ProcessWithRequest,req,'+');
              availableandRequest(req,'+');
              AllocatedandRequest(ProcessWithRequest,req,'-');
              System.out.println("Request wasn't granted because it made the System unsafe");
-         }
+             // print max array
+      System.out.println("Max Array ");
+       for(int x=0;x<NoOfProcesses;x++)
+    {
+        for(int j=0;j<DataTypes;j++)
+        {
+            System.out.print(this.max[x][j]+" ");
+        }
+        System.out.println();
+    }
+     //==========================
+    System.out.println("Allocated Array");
+    // print allocated array
+      for(int x=0;x<NoOfProcesses;x++)
+    {
+        for(int j=0;j<DataTypes;j++)
+        {
+            System.out.print(this.allocated[x][j]+" ");
+        }
+        System.out.println();
+    }
+      //=========================
+      System.out.println("Need Array");
+    // print allocated array
+      for(int x=0;x<NoOfProcesses;x++)
+    {
+        for(int j=0;j<DataTypes;j++)
+        {
+            System.out.print(this.need[x][j]+" ");
+        }
+        System.out.println();
+    }
+   //==============================
+      System.out.println("The Order of Processes");
+      for(int h=0;h<NoOfProcesses;h++)
+          System.out.println("P"+order[h]);
+      /*
+      //print available 
+      System.out.print("The Available Array: ");
+      for(int w=0;w<DataTypes;w++)
+          System.out.print(available[w]+" ");
+      System.out.println(""); */
+      //==================
+      //print request and Process with request
+      System.out.println("The Process with Request: P"+ProcessWithRequest);
+      System.out.print("The Request Array: ");
+      for(int w=0;w<DataTypes;w++)
+          System.out.print(req[w]+" ");
+      System.out.println("");
+      //================== 
+      }
       
  
  
