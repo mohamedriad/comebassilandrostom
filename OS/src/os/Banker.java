@@ -2,13 +2,16 @@ package os;
 import java.util.Random;
 import java.util.Scanner;
 public class Banker
-{ int[][] max;
-  int[][] need;
-  int[][] allocated;
-  int[] available;
-  int[] NoOfInstances;
-  int[] SumOfColoumns; // because in order to put available values it will be  NoOfinstances-sumofcoloumn
-  int NoOfProcesses,DataTypes;
+{  int[][] max;
+   int[][] need;
+   int[][] allocated;
+   int[][] tempallocated;
+   int[] available;
+   int[] tempavailable;
+   int[] NoOfInstances;
+   int[] SumOfColoumns; // because in order to put available values it will be  NoOfinstances-sumofcoloumn
+   int NoOfProcesses,DataTypes;
+   //int Order=0;
   
   // functions bta3t el random
   public void fillMax()
@@ -81,7 +84,9 @@ public class Banker
      max=new int[NoOfProcesses][DataTypes];
      need=new int[NoOfProcesses][DataTypes];
      allocated=new int[NoOfProcesses][DataTypes];
+     tempallocated=new int[NoOfProcesses][DataTypes];
      available=new int[DataTypes];
+     tempavailable=new int[DataTypes];
      System.out.print("Please enter the No of instances of each resource type: ");
      for(int z=0;z<DataTypes;z++)
          this.NoOfInstances[z]=sc.nextInt();
@@ -94,12 +99,16 @@ public class Banker
  {   //input();
     int order[]=new int[NoOfProcesses]; // to know to order the processes finished with
     boolean isDone[]=new boolean[NoOfProcesses]; // so we don't enter to process twice intially the values are false!
-    getNeed();// calculate the need... Need=max-allocated
+    boolean isFinished[]=new boolean[NoOfProcesses];
+   // getNeed();// calculate the need... Need=max-allocated but the temp allocated so it reaches 0 in the end
     int i=0; 
+    int Order=0;
     if(RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req)){
         NeedandRequest(ProcessWithRequest,req,'-');
         availableandRequest(req,'-');
         AllocatedandRequest(ProcessWithRequest,req,'+');
+        AddRequestToTemp(ProcessWithRequest,req);
+        getNeed();
     while(i<NoOfProcesses)
     {  
         boolean getout=false; //safety variable....3shan lw hasal f mra w 3mlt loop kmla mn l inner loop w mdkhltsh wla mra el if,a3rf atla3 mnha
@@ -108,8 +117,18 @@ public class Banker
             if(NeedLessThanAvailable(r) && !isDone[r]) 
             {
                 addAllocatedtoAvailable(r); // available+=allocated
-                clearallocated(r);    // allocated =0 
-                order[i] =r; // arranging the processes inside this array el i na damen enha ht3ed 0 1 2 3 4 f 3shan kda 3mltha el index enma l r hya lassigned 3shan bet-represent el current process ly 5lst 
+                  // so we could save all the requests then minus it from the need but keep the safety check running good with the allocated
+               // AddRequestToTemp(r,req);
+                clearallocated(r);    // allocated =0
+                /*
+                if(NeedEqualsZero(r) && !isFinished[r])
+                {
+                    isFinished[r]=true;
+                    order[Order] =r;
+                    Order++;
+                    getout=true;
+                   } */
+                // arranging the processes inside this array el i na damen enha ht3ed 0 1 2 3 4 f 3shan kda 3mltha el index enma l r hya lassigned 3shan bet-represent el current process ly 5lst 
                 isDone[r]=true; // hena b2a l r b2t l index 3shan zy ma olna el r bet-represent el current process
                 getout=true;
                 i++;
@@ -123,11 +142,17 @@ public class Banker
     } }
     else
     {  
-           System.out.println("request wasn't granted Bec it didn't pass the checking whether it's less than available and need or not");
+           System.out.println("request wasn't granted Bec it didn't pass the checking whether it's less than available and need or not so it would pass the maximum number ");
     }
     
        if(i==NoOfProcesses)
          {
+             
+         //print available 
+         System.out.println("Available Array");
+         for(int b=0;b<DataTypes;b++)
+             System.out.print(this.available[b]+" ");
+         System.out.println();
              // print max array
       System.out.println("Max Array ");
        for(int x=0;x<NoOfProcesses;x++)
@@ -148,7 +173,8 @@ public class Banker
             System.out.print(this.allocated[x][j]+" ");
         }
         System.out.println();
-    }
+    }  
+      
       //=========================
       System.out.println("Need Array");
     // print allocated array
@@ -161,9 +187,12 @@ public class Banker
         System.out.println();
     }
    //==============================
+   /*
+    // OrderOfProcesses
       System.out.println("The Order of Processes");
       for(int h=0;h<NoOfProcesses;h++)
           System.out.println("P"+order[h]);
+   */
       /*
       //print available 
       System.out.print("The Available Array: ");
@@ -179,12 +208,22 @@ public class Banker
       System.out.println("");
       //==================
              System.out.println("System is Safe");}
-       else if(i!=0 && RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req) ) 
+       else if(i!=0 && RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req) ) // m3naah enna b3d ma ednaah el request lakn khala l system msh safe fna baraga3 kol haga zy ma kant w wla aknn l request hasal
          { 
              NeedandRequest(ProcessWithRequest,req,'+');
              availableandRequest(req,'+');
              AllocatedandRequest(ProcessWithRequest,req,'-');
+             // fill allocated into temp2dMatrix
+           for(int rows=0;rows<NoOfProcesses;rows++)
+           {
+               for(int coloumns=0;coloumns<DataTypes;coloumns++)
+               {
+                   this.tempallocated[rows][coloumns]=this.allocated[rows][coloumns];
+               }
+           }
+        //==========================
              System.out.println("Request wasn't granted because it made the System unsafe");
+            /*
              // print max array
       System.out.println("Max Array ");
        for(int x=0;x<NoOfProcesses;x++)
@@ -221,12 +260,13 @@ public class Banker
       System.out.println("The Order of Processes");
       for(int h=0;h<NoOfProcesses;h++)
           System.out.println("P"+order[h]);
-      /*
+      */
+            /*
       //print available 
       System.out.print("The Available Array: ");
       for(int w=0;w<DataTypes;w++)
           System.out.print(available[w]+" ");
-      System.out.println(""); */
+      System.out.println("");*/ 
       //==================
       //print request and Process with request
       System.out.println("The Process with Request: P"+ProcessWithRequest);
@@ -240,9 +280,17 @@ public class Banker
  
  
  
- }         
-
-    public boolean NeedLessThanAvailable(int k) // bb3tlha l noOfRow aknne ba3at satr wahd 
+ }  
+ public void AddRequestToTemp(int k,int[] req)
+ {
+    for(int coloumns=0;coloumns<DataTypes;coloumns++)
+               {
+                   
+                   this.tempallocated[k][coloumns]+=req[coloumns];
+               }
+             //==========================
+ }
+ public boolean NeedLessThanAvailable(int k) // bb3tlha l noOfRow aknne ba3at satr wahd 
     {
         for(int i=0;i<DataTypes;i++)
         {
@@ -251,36 +299,31 @@ public class Banker
         }
         return true;
         }
-
-    public void getNeed()
+ public void getNeed()
     {
        for(int rows=0;rows<NoOfProcesses;rows++)
        {
            for(int coloumns=0;coloumns<DataTypes;coloumns++)
            {
-             this.need[rows][coloumns]=this.max[rows][coloumns]-this.allocated[rows][coloumns];
+             this.need[rows][coloumns]=this.max[rows][coloumns]-this.tempallocated[rows][coloumns];
            }
        }
     }
-
-    public void addAllocatedtoAvailable(int k) // nfs fkrt el NeedLessThanAvailable 
+ public void addAllocatedtoAvailable(int k) // nfs fkrt el NeedLessThanAvailable 
     {
       for(int i=0;i<DataTypes;i++)
       {
        this.available[i]+=allocated[k][i];
       }
     }
-
-   
-    public void clearallocated(int k) 
+  public void clearallocated(int k) 
     {
         for(int i=0;i<DataTypes;i++)
         { 
             this.allocated[k][i]=0;
         }
         }
-
-    public boolean AllisDone(boolean ar[]) 
+ public boolean AllisDone(boolean ar[]) 
     {
         for(int i=0;i<NoOfProcesses;i++)
         {
@@ -289,8 +332,7 @@ public class Banker
         }
         return true;
     }
-
-    private boolean RequestLessThanAvailable(int[] req) {
+ private boolean RequestLessThanAvailable(int[] req) {
         for(int i=0;i<DataTypes;i++)
         {
           if(this.available[i]<req[i])
@@ -298,8 +340,7 @@ public class Banker
         }
         return true;
     }
-
-    private void NeedandRequest(int ProcessWithRequest,int[] req,char op) {
+ private void NeedandRequest(int ProcessWithRequest,int[] req,char op) {
         if(op == '+')
         {
            for(int coloumns=0;coloumns<DataTypes;coloumns++)
@@ -314,8 +355,7 @@ public class Banker
            }
         }
      }
-
-    private void availableandRequest(int[] req,char op) {
+ private void availableandRequest(int[] req,char op) {
         if(op=='+')
         {
            for(int coloumns=0;coloumns<DataTypes;coloumns++)
@@ -330,8 +370,7 @@ public class Banker
            }
         }
      }
-
-    private void AllocatedandRequest(int ProcessWithRequest, int[] req,char op) {
+private void AllocatedandRequest(int ProcessWithRequest, int[] req,char op) {
         if(op=='+')
         {
            for(int coloumns=0;coloumns<DataTypes;coloumns++)
@@ -346,8 +385,7 @@ public class Banker
            }
         }
     }
-
-    private boolean RequestLessThanNeed(int ProcessWithRequest, int[] req)
+ private boolean RequestLessThanNeed(int ProcessWithRequest, int[] req)
     {
         for(int i=0;i<DataTypes;i++)
         {
@@ -356,6 +394,26 @@ public class Banker
         }
         return true;
     }
+ public boolean NeedNotEqualZero()
+ {   for(int i=0;i<NoOfProcesses;i++)
+     {
+         for(int j=0;j<DataTypes;j++)
+         {
+             if(this.need[i][j]>0)
+                 return true;
+         }
+     }
+     return false;
+ }
+
+  public boolean NeedEqualsZero(int r) {
+        for(int coloumns=0;coloumns<DataTypes;coloumns++)
+        {
+           if(this.need[r][coloumns]>0)
+               return false;
+        }
+        return true;
+     }
    
 }
   
