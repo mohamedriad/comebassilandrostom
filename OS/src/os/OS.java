@@ -12,8 +12,8 @@ public class OS {
     b.getNeed();
     int[] order=new int[b.NoOfProcesses];
     boolean[] isFinished=new boolean[b.NoOfProcesses];
-    int Count=0;
-    int n=0;
+    int Count=0;// for ordering
+    int n=0;// counting requests
     do
      { 
       // fill requests

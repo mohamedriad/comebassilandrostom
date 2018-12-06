@@ -11,22 +11,19 @@ public class Banker
    int[] NoOfInstances;
    int[] SumOfColoumns; // because in order to put available values it will be  NoOfinstances-sumofcoloumn
    int NoOfProcesses,DataTypes;
-   //int Order=0;
-  
-  // functions bta3t el random
+   int[] ReleaseArray;
+  // functions filling the Matrices
   public void fillMax()
   {
-      Random rand=new Random();
-     
+    Random rand=new Random();
     for(int i=0;i<NoOfProcesses;i++)
     {
         for(int j=0;j<DataTypes;j++)
         {
             int maximum=NoOfInstances[j];
             int minimum=(NoOfInstances[j])/2;
-            this.max[i][j]=(int) ((Math.random() * ((maximum - minimum) + 1)) + minimum);
-           // this.max[i][j]=rand.nextInt(available[j])+1; // bec 0 is inclusive and max value is exclusive so we add 1
-        }
+            this.max[i][j]=(int) ((Math.random() * ((maximum - minimum) + 1)) + minimum); 
+         }
     }
   }
   public void fillAllocated()
@@ -35,37 +32,7 @@ public class Banker
       for(int i=0;i<NoOfProcesses;i++)
           for(int j=0;j<DataTypes;j++)
               allocated[i][j]=0;
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      /* Random rand=new Random();
-   int[] temp=new int[DataTypes]; //store the values of the available array inside another array for filling the allocated array so we don't change the actual value of the available array
-    //=============== copy array inside the temp
-     for(int i=0;i<DataTypes;i++)
-         temp[i]=this.available[i];
-     //===============  
-      for(int coloumn=0;coloumn<DataTypes;coloumn++)
-    {    //int sum=0;
-        for(int row=0;row<NoOfProcesses;row++)
-        {
-             
-            this.allocated[row][coloumn]=rand.nextInt(NoOfInstances[coloumn]-temp[coloumn]);
-            temp[coloumn]-=allocated[row][coloumn];
-         //   sum+=allocated[row][coloumn];
-            
-        }
-      // SumOfColoumns[coloumn]=sum;
-    }*/
-      
-      
-  }
+   }
   public void fillAvailable()
   {
     //  Random rand= new Random();
@@ -87,6 +54,7 @@ public class Banker
      tempallocated=new int[NoOfProcesses][DataTypes];
      available=new int[DataTypes];
      tempavailable=new int[DataTypes];
+     ReleaseArray=new int[DataTypes];
      System.out.print("Please enter the No of instances of each resource type: ");
      for(int z=0;z<DataTypes;z++)
          this.NoOfInstances[z]=sc.nextInt();
@@ -104,31 +72,27 @@ public class Banker
     int i=0; 
     int Order=0;
     if(RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req)){
-        NeedandRequest(ProcessWithRequest,req,'-');
-        availableandRequest(req,'-');
-        AllocatedandRequest(ProcessWithRequest,req,'+');
-        AddRequestToTemp(ProcessWithRequest,req);
-        getNeed();
+        NeedandRequest(ProcessWithRequest,req,'-');// Need-=request....3yzen da yfdl sabt
+        availableandRequest(req,'-');//available -= request... 3yzen da yfdl sabt
+        //copy the available into the temp
+        for(int c=0;c<DataTypes;c++)
+            this.tempavailable[c]=this.available[c];
+        //======================
+        AllocatedandRequest(ProcessWithRequest,req,'+');// allocation+=request... hngrb lw yfdl sabt
+        //el satreen dol mmkn mykonsh lehom lazma 
+      //  AddRequestToTemp(ProcessWithRequest,req); // temp da bytshal feeh requestat w bashelha mel need mlhash 3laka bel checks
+       // getNeed(); // msh mhtag a8yr feha,,, need-= previous requests
+        //===============================
+    //SafetyCheckLoop...mfrood enha mt8yrsh ay haga hya bt3ml hesabat bas 
     while(i<NoOfProcesses)
     {  
         boolean getout=false; //safety variable....3shan lw hasal f mra w 3mlt loop kmla mn l inner loop w mdkhltsh wla mra el if,a3rf atla3 mnha
         for(int r=0;r<NoOfProcesses;r++)
         {
-            if(NeedLessThanAvailable(r) && !isDone[r]) 
+            if(NeedLessThanAvailable(r) && !isDone[r]) // NeedLessThanTempAvailable(r)
             {
-                addAllocatedtoAvailable(r); // available+=allocated
-                  // so we could save all the requests then minus it from the need but keep the safety check running good with the allocated
-               // AddRequestToTemp(r,req);
-                clearallocated(r);    // allocated =0
-                /*
-                if(NeedEqualsZero(r) && !isFinished[r])
-                {
-                    isFinished[r]=true;
-                    order[Order] =r;
-                    Order++;
-                    getout=true;
-                   } */
-                // arranging the processes inside this array el i na damen enha ht3ed 0 1 2 3 4 f 3shan kda 3mltha el index enma l r hya lassigned 3shan bet-represent el current process ly 5lst 
+                addAllocatedtoAvailable(r); // tempavailable+=allocated....lazm nl3b fl temp w lmethod bta3t l check htb2a 3l temp 3shan ehna hn3mlo copy b3d ma yt3ml l request
+                //clearallocated(r);    // allocated =0
                 isDone[r]=true; // hena b2a l r b2t l index 3shan zy ma olna el r bet-represent el current process
                 getout=true;
                 i++;
@@ -136,165 +100,103 @@ public class Banker
         }
         if(!getout)  // 3shan lw wahda fdlt sh8ala mnfdlsh nlef 3alfady gowa
             break;
-        /* if(AllisDone(isDone)) // kda yb2a kol processes khalaset w akhrog
-         {  break;} */
-         
-    } }
+    } 
+    }
+    //===============================
     else
     {  
            System.out.println("request wasn't granted Bec it didn't pass the checking whether it's less than available and need or not so it would pass the maximum number ");
     }
-    
-       if(i==NoOfProcesses)
+     if(i==NoOfProcesses)
          {
-             
+         //==================
+         // release part of the  resources from allocation into the releasearray
+          ReleaseFromAllocation(ProcessWithRequest);
+         // add released part to the available
+          availableandRequest(this.ReleaseArray,'+');
          //print available 
          System.out.println("Available Array");
-         for(int b=0;b<DataTypes;b++)
-             System.out.print(this.available[b]+" ");
-         System.out.println();
-             // print max array
-      System.out.println("Max Array ");
-       for(int x=0;x<NoOfProcesses;x++)
-    {
-        for(int j=0;j<DataTypes;j++)
-        {
-            System.out.print(this.max[x][j]+" ");
-        }
-        System.out.println();
-    }
-     //==========================
-    System.out.println("Allocated Array");
-    // print allocated array
-      for(int x=0;x<NoOfProcesses;x++)
-    {
-        for(int j=0;j<DataTypes;j++)
-        {
-            System.out.print(this.allocated[x][j]+" ");
-        }
-        System.out.println();
-    }  
-      
-      //=========================
-      System.out.println("Need Array");
-    // print allocated array
-      for(int x=0;x<NoOfProcesses;x++)
-    {
-        for(int j=0;j<DataTypes;j++)
-        {
-            System.out.print(this.need[x][j]+" ");
-        }
-        System.out.println();
-    }
-   //==============================
-   /*
-    // OrderOfProcesses
-      System.out.println("The Order of Processes");
-      for(int h=0;h<NoOfProcesses;h++)
-          System.out.println("P"+order[h]);
-   */
-      /*
-      //print available 
-      System.out.print("The Available Array: ");
-      for(int w=0;w<DataTypes;w++)
-          System.out.print(available[w]+" ");
-      System.out.println(""); */
-      //==================
-      //print request and Process with request
-      System.out.println("The Process with Request: P"+ProcessWithRequest);
-      System.out.print("The Request Array: ");
-      for(int w=0;w<DataTypes;w++)
-          System.out.print(req[w]+" ");
-      System.out.println("");
-      //==================
-             System.out.println("System is Safe");}
-       else if(i!=0 && RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req) ) // m3naah enna b3d ma ednaah el request lakn khala l system msh safe fna baraga3 kol haga zy ma kant w wla aknn l request hasal
+         Print1DArray(this.available);
+         // print max array
+         System.out.println("Max Array ");
+         Print2DArray(this.max);
+         //==========================
+         System.out.println("Allocated Array");
+         // print tempallocated array
+         Print2DArray(this.allocated);
+         //=========================
+         // print need array
+         System.out.println("Need Array");
+         Print2DArray(this.need);
+         //==============================
+         System.out.println("ReleasedValues");
+         Print1DArray(this.ReleaseArray);
+         //print request and Process with request
+         System.out.println("The Process with Request: P"+ProcessWithRequest);
+         System.out.print("The Request Array: ");
+         Print1DArray(req);
+          //==================
+       System.out.println("System is Safe");
+         }
+       else if(i!=NoOfProcesses && RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req) ) // m3naah enna b3d ma ednaah el request lakn khala l system msh safe fna baraga3 kol haga zy ma kant w wla aknn l request hasal
          { 
              NeedandRequest(ProcessWithRequest,req,'+');
              availableandRequest(req,'+');
              AllocatedandRequest(ProcessWithRequest,req,'-');
              // fill allocated into temp2dMatrix
-           for(int rows=0;rows<NoOfProcesses;rows++)
+          /* for(int rows=0;rows<NoOfProcesses;rows++)
            {
                for(int coloumns=0;coloumns<DataTypes;coloumns++)
                {
                    this.tempallocated[rows][coloumns]=this.allocated[rows][coloumns];
                }
-           }
-        //==========================
+           }*/
+             //==========================
+              //print available 
+         System.out.println("Available Array");
+         Print1DArray(this.available);
+         // print max array
+         System.out.println("Max Array ");
+         Print2DArray(this.max);
+         //==========================
+         System.out.println("Allocated Array");
+         // print tempallocated array
+         Print2DArray(this.allocated);
+         //=========================
+         // print need array
+         System.out.println("Need Array");
+         Print2DArray(this.need);
+         //==============================
+          
+             
              System.out.println("Request wasn't granted because it made the System unsafe");
-            /*
-             // print max array
-      System.out.println("Max Array ");
-       for(int x=0;x<NoOfProcesses;x++)
-    {
-        for(int j=0;j<DataTypes;j++)
-        {
-            System.out.print(this.max[x][j]+" ");
+             //print request and Process with request
+             System.out.println("The Process with Request: P"+ProcessWithRequest);
+             System.out.print("The Request Array: ");
+             Print1DArray(req);
+              System.out.println("");
+               //================== 
         }
-        System.out.println();
-    }
-     //==========================
-    System.out.println("Allocated Array");
-    // print allocated array
-      for(int x=0;x<NoOfProcesses;x++)
+     if(AvailableEqualsZero())
     {
-        for(int j=0;j<DataTypes;j++)
-        {
-            System.out.print(this.allocated[x][j]+" ");
-        }
-        System.out.println();
+     ReleaseFromAllocation(ProcessWithRequest);
+     availableandRequest(this.ReleaseArray,'+');
     }
-      //=========================
-      System.out.println("Need Array");
-    // print allocated array
-      for(int x=0;x<NoOfProcesses;x++)
-    {
-        for(int j=0;j<DataTypes;j++)
-        {
-            System.out.print(this.need[x][j]+" ");
-        }
-        System.out.println();
-    }
-   //==============================
-      System.out.println("The Order of Processes");
-      for(int h=0;h<NoOfProcesses;h++)
-          System.out.println("P"+order[h]);
-      */
-            /*
-      //print available 
-      System.out.print("The Available Array: ");
-      for(int w=0;w<DataTypes;w++)
-          System.out.print(available[w]+" ");
-      System.out.println("");*/ 
-      //==================
-      //print request and Process with request
-      System.out.println("The Process with Request: P"+ProcessWithRequest);
-      System.out.print("The Request Array: ");
-      for(int w=0;w<DataTypes;w++)
-          System.out.print(req[w]+" ");
-      System.out.println("");
-      //================== 
-      }
-      
- 
- 
- 
- }  
+   }  
  public void AddRequestToTemp(int k,int[] req)
- {
+ {  
     for(int coloumns=0;coloumns<DataTypes;coloumns++)
                {
-                   
                    this.tempallocated[k][coloumns]+=req[coloumns];
                }
+    
              //==========================
  }
  public boolean NeedLessThanAvailable(int k) // bb3tlha l noOfRow aknne ba3at satr wahd 
     {
         for(int i=0;i<DataTypes;i++)
         {
-            if(this.need[k][i]>this.available[i])
+            if(this.need[k][i]>this.tempavailable[i])
                 return false;
         }
         return true;
@@ -309,11 +211,22 @@ public class Banker
            }
        }
     }
+ public void getNeedAfterRelease()
+ {
+   /* for(int rows=0;rows<NoOfProcesses;rows++)
+       {
+           for(int coloumns=0;coloumns<DataTypes;coloumns++)
+           {
+               if(this.need[rows][coloumns]>=this.ReleaseArray[rows][coloumns])
+                this.need[rows][coloumns]-=this.ReleaseArray[rows][coloumns];
+           }
+       }*/
+ }
  public void addAllocatedtoAvailable(int k) // nfs fkrt el NeedLessThanAvailable 
     {
       for(int i=0;i<DataTypes;i++)
       {
-       this.available[i]+=allocated[k][i];
+       this.tempavailable[i]+=allocated[k][i];
       }
     }
   public void clearallocated(int k) 
@@ -370,7 +283,7 @@ public class Banker
            }
         }
      }
-private void AllocatedandRequest(int ProcessWithRequest, int[] req,char op) {
+ private void AllocatedandRequest(int ProcessWithRequest, int[] req,char op) {
         if(op=='+')
         {
            for(int coloumns=0;coloumns<DataTypes;coloumns++)
@@ -405,8 +318,7 @@ private void AllocatedandRequest(int ProcessWithRequest, int[] req,char op) {
      }
      return false;
  }
-
-  public boolean NeedEqualsZero(int r) {
+ public boolean NeedEqualsZero(int r) {
         for(int coloumns=0;coloumns<DataTypes;coloumns++)
         {
            if(this.need[r][coloumns]>0)
@@ -414,6 +326,49 @@ private void AllocatedandRequest(int ProcessWithRequest, int[] req,char op) {
         }
         return true;
      }
+ public void Print2DArray(int[][] ar)
+ {
+   for(int i=0;i<NoOfProcesses;i++)
+   {
+       for(int j=0;j<DataTypes;j++)
+       {
+           System.out.print(ar[i][j]+" ");
+       }
+       System.out.println();
+   }
+ }
+ public void Print1DArray(int[] ar)
+ {
+     for(int i=0;i<DataTypes;i++)
+     { 
+         System.out.print(ar[i]+" ");
+     }
+     System.out.println();
+ }
+public void ReleaseFromAllocation(int k)
+{   Random r=new Random();
+    int releasedvalue=0;
+    for(int c=0;c<DataTypes;c++)
+    {
+        if(this.allocated[k][c]>0)
+        {releasedvalue=(int)r.nextInt(this.allocated[k][c]+1/3);
+        this.allocated[k][c]-=releasedvalue;
+        this.ReleaseArray[c]=releasedvalue;
+        }
+    }
+    
+}
+
+    private boolean AvailableEqualsZero()
+    {
+        for(int i=0;i<DataTypes;i++)
+        {
+            if(this.available[i]==0)
+                return true;
+        
+        }
+        return false;
+    }
    
 }
   
