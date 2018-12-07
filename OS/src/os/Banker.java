@@ -70,10 +70,12 @@ public class Banker
     int order[]=new int[NoOfProcesses]; // to know to order the processes finished with
     boolean isDone[]=new boolean[NoOfProcesses]; // so we don't enter to process twice intially the values are false!
     boolean isFinished[]=new boolean[NoOfProcesses];
+    boolean check1=RequestLessThanAvailable(req);
+    boolean check2=RequestLessThanNeed(ProcessWithRequest,req);
    // getNeed();// calculate the need... Need=max-allocated but the temp allocated so it reaches 0 in the end
     int i=0; 
     int Order=0;
-    if(RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req))
+    if( check1 && check2 )
     {  NeedandRequest(ProcessWithRequest,req,'-');//Need-=request....3yzen da yfdl sabt
         availableandRequest(req,'-');//available -= request... 3yzen da yfdl sabt
         //copy the available into the temp
@@ -160,7 +162,7 @@ public class Banker
           //==================
        System.out.println("System is Safe");
          }
-       else if(i!=NoOfProcesses  && RequestLessThanAvailable(req) && RequestLessThanNeed(ProcessWithRequest,req)) // m3naah enna b3d ma ednaah el request lakn khala l system msh safe fna baraga3 kol haga zy ma kant w wla aknn l request hasal
+       else if(i!=NoOfProcesses  && check1 && check2) // m3naah enna b3d ma ednaah el request lakn khala l system msh safe fna baraga3 kol haga zy ma kant w wla aknn l request hasal
          { 
              NeedandRequest(ProcessWithRequest,req,'+');
              availableandRequest(req,'+');
@@ -177,7 +179,6 @@ public class Banker
     {
       while(this.available[ZeroColoumn]<this.NoOfInstances[ZeroColoumn])
        ++this.available[ZeroColoumn]; 
-   System.out.println("i am inside the available handler");
     }
    }  
 public boolean NeedLessThanAvailable(int k) // bb3tlha l noOfRow aknne ba3at satr wahd 
