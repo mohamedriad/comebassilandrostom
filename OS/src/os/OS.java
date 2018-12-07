@@ -36,6 +36,10 @@ public class OS {
                     Count++;
                 }
        }
+       if(n==20000)
+       {b.EmergencyRelease();
+        b.availableandRequest(b.ReleaseArray,'+');
+       }
       } while(b.NeedNotEqualZero());
     // OrderOfProcesses
       System.out.println("The Order of Processes");
