@@ -13,7 +13,7 @@ public class Banker
    int NoOfProcesses,DataTypes;
    int[] ReleaseArray;
    int ColoumnWithTrouble;
-  public int ZeroColoumn;
+   int ZeroColoumn;
   // functions filling the Matrices
   public void fillMax()
   {
@@ -30,14 +30,12 @@ public class Banker
   }
   public void fillAllocated()
   { 
-      
       for(int i=0;i<NoOfProcesses;i++)
           for(int j=0;j<DataTypes;j++)
               allocated[i][j]=0;
    }
   public void fillAvailable()
   {
-    //  Random rand= new Random();
      for(int i=0;i<DataTypes;i++)
      {   
          this.available[i]=this.NoOfInstances[i];
@@ -64,7 +62,7 @@ public class Banker
     fillAvailable();
     fillAllocated();
   }
-  //==============================
+//==============================
  public void banker(int ProcessWithRequest , int[] req)
  {   //input();
     int order[]=new int[NoOfProcesses]; // to know to order the processes finished with
@@ -112,31 +110,30 @@ public class Banker
     }
      if(i==NoOfProcesses)
          {
-             int r=0;
-         //handle the allocated... it would be boolean and  put it inside the releasing
-          while(SumOfAvailableAndAllocatedBiggerThanIntialInstances()) //if the coloumn of the allocation + the available violates the total no. of instances then it won't put no's in this coloumn
+         // the allocating and releasing part
+          while(SumOfAvailableAndAllocatedBiggerThanIntialInstances()) //de-allocates from the allocation matrix,returns the coloumn with sum violates the condition available + allocation = no of instances(in same coloumn)
           {
              for(int k=0 ; k<NoOfProcesses ;k++)
-             {  if(this.allocated[k][ColoumnWithTrouble]>0) //to check the instances in that coloumn with trouble to release all of them into the available 
+             {  if(this.allocated[k][ColoumnWithTrouble]>0) //to check the instances in that coloumn with trouble to know which row to release from 
                 {
-                 --this.allocated[k][ColoumnWithTrouble]; //allocated[1][0]=0;
+                 --this.allocated[k][ColoumnWithTrouble]; //release from the allocated row
                 
                 }
-                r++;
-          } 
+             } 
           }
          // release part of the  resources from allocation into the releasearray
          ReleaseFromAllocation(ProcessWithRequest);
          // add released part to the available
          availableandRequest(this.ReleaseArray,'+');
-         if(SumOfAvailableAndAllocatedBiggerThanIntialInstances())
+         if(SumOfAvailableAndAllocatedBiggerThanIntialInstances()) // to check if that release will violate the condition above in other words it will re-allocate back to the allocation matrix the released values bec the avail+allocation would be < NoOfinstances
          { 
              availableandRequest(this.ReleaseArray,'-');
          }
-         while(CheckSum())
+         while(CheckSum()) // if the condition is violated where the sum in the coloumn is mroe than that of available but they are both less than no of instances then we release to the available
          {
              ++this.available[ColoumnWithTrouble];
          }
+         // the previous part was responsible for the allocating and releasing of the instances in a completely random way but without violating the condition of sumOfOneColoumn+available=NoOfInstances
          //print available 
          System.out.println("Available Array");
          Print1DArray(this.available);
@@ -152,10 +149,6 @@ public class Banker
          System.out.println("Need Array");
          Print2DArray(this.need);
          //==============================
-         /*
-         System.out.println("ReleasedValues");
-         Print1DArray(this.ReleaseArray); */
-         //print request and Process with request
          System.out.println("The Process with Request: P"+ProcessWithRequest);
          System.out.print("The Request Array: ");
          Print1DArray(req);
@@ -172,13 +165,27 @@ public class Banker
              System.out.println("The Process with Request: P"+ProcessWithRequest);
              System.out.print("The Request Array: ");
              Print1DArray(req);
-              System.out.println("");
+             System.out.println("");
                //================== 
         }
+     //this is called the available handler cuz if one of the resources reaches 0 then it would be so difficult to get a suitable request so we release instances from the allocated matrix into the available so we don't have to wait for too many requests
+     //considered as an optmization for the system
      if(AvailableEqualsZero())
-    {
-      while(this.available[ZeroColoumn]<this.NoOfInstances[ZeroColoumn])
-       ++this.available[ZeroColoumn]; 
+    {// put all the instances inside the available again so we don't get stuck in too many requests because of the small no of available instances bec. it's the no. compared with the requests so in the end the need is the one delaying us
+     while(this.available[ZeroColoumn]<this.NoOfInstances[ZeroColoumn])
+       ++this.available[ZeroColoumn];
+     while(SumOfAvailableAndAllocatedBiggerThanIntialInstances()) //de-allocates from the allocation matrix,returns the coloumn with sum violates the condition available + allocation = no of instances(in same coloumn)
+          {
+             for(int k=0 ; k<NoOfProcesses ;k++)
+             {  if(this.allocated[k][ZeroColoumn]>0) //to check the instances in that coloumn with trouble to know which row to release from 
+                {
+                 --this.allocated[k][ZeroColoumn]; //release from the allocated row
+                
+                }
+             } 
+          }
+       // so that, when we go back again to compare with requests the allocated + available would be violated so we de allocate the allocation matrix TO HAVE CORRECT SAFETY CHECK
+      //System.out.println("i am inside the handler");
     }
    }  
 public boolean NeedLessThanAvailable(int k) // bb3tlha l noOfRow aknne ba3at satr wahd 
@@ -393,7 +400,7 @@ private boolean CheckSum()
        {
          sum+=this.allocated[rows][coloumn];
        }
-       if(sum+this.available[coloumn] < this.NoOfInstances[coloumn] && sum>this.available[coloumn])
+       if(sum+this.available[coloumn] < this.NoOfInstances[coloumn] )// there was && sum>this.available[column]
        {
            ColoumnWithTrouble=coloumn;
            return true;
